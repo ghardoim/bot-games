@@ -1,29 +1,114 @@
+class Sudoku {
+	constructor(K) {
+		this.N = 9
+		this.K = K
+
+        const SRNd = Math.sqrt(this.N)
+		this.SRN = Math.floor(SRNd)
+
+        this.solution = Array.from({ length: this.N }, () => Array.from({ length: this.N }, () => 0))
+        this.clues = Array.from({ length: this.N }, () => Array.from({ length: this.N }, () => 0))
+	}
+
+	fillValues() {
+		this.fillDiagonal()
+		this.fillRemaining(0, this.SRN)
+		this.removeKDigits() 
+	}
+
+	fillDiagonal() { for (let i = 0; i < this.N; i += this.SRN) this.fillBox(i, i) }
+
+	unUsedInBox(rowStart, colStart, num) {
+		for (let i = 0; i < this.SRN; i++) {
+			for (let j = 0; j < this.SRN; j++) if (this.solution[rowStart + i][colStart + j] === num) return false
+		}
+		return true
+	}
+
+	fillBox(row, col) {
+		let num = 0
+		for (let i = 0; i < this.SRN; i++) {
+			for (let j = 0; j < this.SRN; j++) {
+
+				while (true) {
+					num = this.randomGenerator(this.N)
+					if (this.unUsedInBox(row, col, num)) break
+				}
+
+				this.solution[row + i][col + j] = num
+				this.clues[row + i][col + j] = num
+			}
+		}
+	}
+
+	randomGenerator(num) { return Math.floor(Math.random() * num + 1) }
+
+	checkIfSafe(i, j, num) {
+		return (this.unUsedInRow(i, num) && this.unUsedInCol(j, num) &&
+			this.unUsedInBox(i - (i % this.SRN), j - (j % this.SRN), num))
+	}
+
+	unUsedInRow(i, num) {
+		for (let j = 0; j < this.N; j++) if (this.solution[i][j] === num) return false
+		return true
+	}
+
+	unUsedInCol(j, num) {
+		for (let i = 0; i < this.N; i++) if (this.solution[i][j] === num) return false
+		return true
+	}
+
+	fillRemaining(i, j) {
+		if (i === this.N - 1 && j === this.N) return true
+		if (j === this.N) {
+			i += 1
+			j = 0
+		}
+		if (this.solution[i][j] !== 0) return this.fillRemaining(i, j + 1)
+
+		for (let num = 1; num <= this.N; num++) {
+			if (this.checkIfSafe(i, j, num)) {
+				this.solution[i][j] = num
+				this.clues[i][j] = num
+
+				if (this.fillRemaining(i, j + 1)) return true
+				this.solution[i][j] = 0
+				this.clues[i][j] = 0
+			}
+		}
+		return false
+	}
+
+    removeKDigits() {
+		let count = this.K
+		while (count !== 0) {
+
+			let i = Math.floor(Math.random() * this.N)
+			let j = Math.floor(Math.random() * this.N)
+			if (this.clues[i][j] !== 0) {
+                this.clues[i][j] = "-"
+				count--
+			}
+		}
+	}
+
+	getSolution() { return this.solution }
+	getClues() { return this.clues }
+}
+
+function setBlockRange(square, rowPosition, number, column) {
+    if (rowPosition && (3 <= column && column < 6)) square.classList.add(`block${number + 1}`)
+    if (rowPosition && 6 <= column) square.classList.add(`block${number + 2}`)
+    if (rowPosition && column < 3) square.classList.add(`block${number}`)
+}
+
+let sudoku = new Sudoku(Math.floor(Math.random() * 100))
+sudoku.fillValues()
+
+let solution = sudoku.getSolution()
+let clues = sudoku.getClues()
 var numberSelected = null
 var squareSelected = null
-
-var clues = [
-    "--74916-5",
-    "2---6-3-9",
-    "-----7-1-",
-    "-586----4",
-    "--3----9-",
-    "--62--187",
-    "9-4-7---2",
-    "67-83----",
-    "81--45---"
-]
-
-var solution = [
-    "387491625",
-    "241568379",
-    "569327418",
-    "758619234",
-    "123784596",
-    "496253187",
-    "934176852",
-    "675832941",
-    "812945763"
-]
 
 function setBlockRange(square, rowPosition, number, column) {
     if (rowPosition && (3 <= column && column < 6)) square.classList.add(`block${number + 1}`)
