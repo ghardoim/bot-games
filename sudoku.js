@@ -25,6 +25,12 @@ var solution = [
     "812945763"
 ]
 
+function setBlockRange(square, rowPosition, number, column) {
+    if (rowPosition && (3 <= column && column < 6)) square.classList.add(`block${number + 1}`)
+    if (rowPosition && 6 <= column) square.classList.add(`block${number + 2}`)
+    if (rowPosition && column < 3) square.classList.add(`block${number}`)
+}
+
 window.onload = function() {
     const digits = document.getElementById("digits")
     const board = document.getElementById("board")
@@ -40,10 +46,9 @@ window.onload = function() {
         })
 
         number.classList.add("number")
+        digits.appendChild(number)
         number.innerText = r + 1
         number.id = r + 1
-
-        digits.appendChild(number)
 
         for (let c = 0; c < 9; c++) {
             let square = document.createElement("div")
@@ -57,17 +62,20 @@ window.onload = function() {
                 let coords = this.id.split("-")
                 let isRight = solution[parseInt(coords[0])][parseInt(coords[1])] == numberSelected.id
 
-                this.classList.remove(!isRight ? "right" : "wrong")
+                this.classList.remove(!isRight ? "right" : "wrong", "empty")
                 this.classList.add(isRight ? "right" : "wrong")
             })
 
-            square.classList.add("square")
+            square.classList.add("square", `row${r}`, `column${c}`)
+            setBlockRange(square, (3 <= r && r < 6), 4, c)
+            setBlockRange(square, 6 <= r, 7, c)
+            setBlockRange(square, r < 3, 1, c)
             square.id = `${r}-${c}`
 
             if ("-" != clues[r][c]) {
                 square.innerText = clues[r][c]
                 square.classList.add("start")
-            }
+            } else { square.classList.add("empty") }
 
             if (2 == r || 5 == r) square.classList.add("horizontal")
             if (2 == c || 5 == c) square.classList.add("vertical")
